@@ -5,6 +5,10 @@
 
 @custom-variant dark (&:is(.dark *));
 
+.prose img {
+  width: 50%;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
