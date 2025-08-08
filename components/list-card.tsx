@@ -9,6 +9,7 @@ import { ListWithParsedTags } from "@/lib/types";
 import { deleteListAction, updateListAction } from "@/lib/actions";
 import { ListEditor } from "./list-editor";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
 
 interface ListCardProps {
@@ -41,27 +42,81 @@ export function ListCard({ list, onUpdate }: ListCardProps) {
   };
 
   const handleCheckboxChange = async (
-    lineIndex: number,
-    isChecked: boolean,
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
+    const checkbox = event.target;
+    const isChecked = checkbox.checked;
+
+    // Get the text content of the list item that contains this checkbox
+    const listItem = checkbox.closest("li");
+    if (!listItem) return;
+
+    // Get the text content of the list item (excluding nested lists)
+    const textContent = Array.from(listItem.childNodes)
+      .filter(
+        (node) =>
+          node.nodeType === Node.TEXT_NODE ||
+          (node.nodeType === Node.ELEMENT_NODE &&
+            node.nodeName !== "UL" &&
+            node.nodeName !== "OL"),
+      )
+      .map((node) => node.textContent)
+      .join("")
+      .trim();
+
+    // Find the line in the content that matches this text
     const lines = content.split("\n");
-    const line = lines[lineIndex];
+    let targetLineIndex = -1;
 
-    if (line.includes("[ ]") || line.includes("[x]")) {
-      const newLine = isChecked
-        ? line.replace("[ ]", "[x]")
-        : line.replace("[x]", "[ ]");
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      if (
+        (line.includes("- [ ]") || line.includes("- [x]")) &&
+        line.includes(textContent.replace(/^\s*/, ""))
+      ) {
+        targetLineIndex = i;
+        break;
+      }
+    }
 
-      lines[lineIndex] = newLine;
-      const newContent = lines.join("\n");
-      setContent(newContent);
+    if (targetLineIndex === -1) {
+      // Fallback: find by checkbox state and similar text
+      const searchText = textContent.substring(0, 20); // First 20 chars
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        if (
+          (line.includes("- [ ]") || line.includes("- [x]")) &&
+          line.toLowerCase().includes(searchText.toLowerCase())
+        ) {
+          targetLineIndex = i;
+          break;
+        }
+      }
+    }
+
+    if (targetLineIndex !== -1) {
+      // Update the specific line
+      if (isChecked) {
+        lines[targetLineIndex] = lines[targetLineIndex].replace(
+          "- [ ]",
+          "- [x]",
+        );
+      } else {
+        lines[targetLineIndex] = lines[targetLineIndex].replace(
+          "- [x]",
+          "- [ ]",
+        );
+      }
+
+      const updatedContent = lines.join("\n");
+      setContent(updatedContent);
 
       // Update in database
       try {
         const formData = new FormData();
         formData.append("id", list.id.toString());
         formData.append("name", list.name);
-        formData.append("content", newContent);
+        formData.append("content", updatedContent);
         formData.append("dueDate", list.due_date || "");
         formData.append("tags", list.tags.join(", "));
 
@@ -71,16 +126,19 @@ export function ListCard({ list, onUpdate }: ListCardProps) {
         console.error("Failed to update checkbox:", error);
         // Revert on error
         setContent(list.content);
+        checkbox.checked = !isChecked;
       }
+    } else {
+      console.error("Could not find matching line for checkbox");
+      // Revert checkbox state
+      checkbox.checked = !isChecked;
     }
   };
 
   const formatDate = (dateString: string) => {
-    // Create date objects using local time
-    const dueDate = new Date(dateString + "T00:00:00"); // Ensure local time interpretation
+    const dueDate = new Date(dateString + "T00:00:00");
     const now = new Date();
 
-    // Set both dates to start of day for accurate day comparison
     const dueDateStart = new Date(
       dueDate.getFullYear(),
       dueDate.getMonth(),
@@ -169,11 +227,35 @@ export function ListCard({ list, onUpdate }: ListCardProps) {
       </CardHeader>
       <CardContent className="pt-0">
         {content && (
-          <div className="mb-4 prose prose-sm max-w-none">
+          <div className="mb-4 prose prose-sm max-w-none prose-slate">
             <ReactMarkdown
-              remarkPlugins={[remarkBreaks]}
+              remarkPlugins={[remarkGfm, remarkBreaks]}
               components={{
-                // Headings
+                // Make checkboxes interactive
+                input: ({ type, checked, disabled, ...props }) => {
+                  if (type === "checkbox") {
+                    return (
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        disabled={false} // Override the disabled state from remark-gfm
+                        onChange={handleCheckboxChange}
+                        className="mr-2 rounded border-slate-300 cursor-pointer"
+                        {...props}
+                      />
+                    );
+                  }
+                  return (
+                    <input
+                      type={type}
+                      checked={checked}
+                      disabled={disabled}
+                      {...props}
+                    />
+                  );
+                },
+
+                // Style headings
                 h1: ({ children }) => (
                   <h1 className="text-2xl font-bold text-slate-900 mb-4 mt-6 first:mt-0">
                     {children}
@@ -205,14 +287,14 @@ export function ListCard({ list, onUpdate }: ListCardProps) {
                   </h6>
                 ),
 
-                // Paragraphs
+                // Style paragraphs
                 p: ({ children }) => (
                   <p className="text-slate-700 mb-3 leading-relaxed last:mb-0">
                     {children}
                   </p>
                 ),
 
-                // Lists - separate checkbox logic from regular lists
+                // Style lists
                 ul: ({ children }) => (
                   <ul className="list-disc list-inside space-y-1 mb-4 last:mb-0 pl-4">
                     {children}
@@ -223,100 +305,11 @@ export function ListCard({ list, onUpdate }: ListCardProps) {
                     {children}
                   </ol>
                 ),
-                li: ({ children, ...props }) => {
-                  const childrenString = children?.toString() || "";
+                li: ({ children }) => (
+                  <li className="text-slate-700 py-1">{children}</li>
+                ),
 
-                  // Handle checkboxes
-                  if (
-                    childrenString.includes("[ ]") ||
-                    childrenString.includes("[x]")
-                  ) {
-                    const isChecked = childrenString.includes("[x]");
-                    const text = childrenString.replace(
-                      /^\s*-?\s*\[([ x])\]\s*/,
-                      "",
-                    );
-
-                    // Get the line index from the original content
-                    const lines = content.split("\n");
-                    const lineIndex = lines.findIndex(
-                      (line) =>
-                        line.includes(childrenString.replace(/^\s*/, "")) ||
-                        line.includes(`[${isChecked ? "x" : " "}]`),
-                    );
-
-                    return (
-                      <li className="flex items-start space-x-2 py-1 list-none -ml-4">
-                        <input
-                          type="checkbox"
-                          checked={isChecked}
-                          onChange={(e) =>
-                            handleCheckboxChange(lineIndex, e.target.checked)
-                          }
-                          className="mt-1 rounded border-slate-300 cursor-pointer flex-shrink-0"
-                        />
-                        <span
-                          className={`flex-1 ${isChecked ? "line-through text-slate-500" : "text-slate-700"}`}
-                        >
-                          <ReactMarkdown
-                            remarkPlugins={[remarkBreaks]}
-                            components={{
-                              p: ({ children }) => <span>{children}</span>,
-                              strong: ({ children }) => (
-                                <strong className="font-semibold text-slate-900">
-                                  {children}
-                                </strong>
-                              ),
-                              em: ({ children }) => (
-                                <em className="italic text-slate-800">
-                                  {children}
-                                </em>
-                              ),
-                              code: ({ children }) => (
-                                <code className="bg-slate-100 text-slate-800 px-1 py-0.5 rounded text-sm font-mono">
-                                  {children}
-                                </code>
-                              ),
-                            }}
-                          >
-                            {text}
-                          </ReactMarkdown>
-                        </span>
-                      </li>
-                    );
-                  }
-
-                  // Regular list items
-                  return (
-                    <li className="text-slate-700 py-1">
-                      <ReactMarkdown
-                        remarkPlugins={[remarkBreaks]}
-                        components={{
-                          p: ({ children }) => <span>{children}</span>,
-                          strong: ({ children }) => (
-                            <strong className="font-semibold text-slate-900">
-                              {children}
-                            </strong>
-                          ),
-                          em: ({ children }) => (
-                            <em className="italic text-slate-800">
-                              {children}
-                            </em>
-                          ),
-                          code: ({ children }) => (
-                            <code className="bg-slate-100 text-slate-800 px-1 py-0.5 rounded text-sm font-mono">
-                              {children}
-                            </code>
-                          ),
-                        }}
-                      >
-                        {childrenString}
-                      </ReactMarkdown>
-                    </li>
-                  );
-                },
-
-                // Text formatting
+                // Style text formatting
                 strong: ({ children }) => (
                   <strong className="font-semibold text-slate-900">
                     {children}
@@ -326,7 +319,7 @@ export function ListCard({ list, onUpdate }: ListCardProps) {
                   <em className="italic text-slate-800">{children}</em>
                 ),
 
-                // Code
+                // Style code
                 code: ({ children, className }) => {
                   const isInline = !className;
                   if (isInline) {
@@ -348,14 +341,14 @@ export function ListCard({ list, onUpdate }: ListCardProps) {
                   </pre>
                 ),
 
-                // Blockquotes
+                // Style blockquotes
                 blockquote: ({ children }) => (
                   <blockquote className="border-l-4 border-slate-300 pl-4 py-2 mb-4 text-slate-600 italic bg-slate-50 rounded-r">
                     {children}
                   </blockquote>
                 ),
 
-                // Links
+                // Style links
                 a: ({ children, href }) => (
                   <a
                     href={href}
@@ -367,13 +360,10 @@ export function ListCard({ list, onUpdate }: ListCardProps) {
                   </a>
                 ),
 
-                // Horizontal rule
+                // Style horizontal rules
                 hr: () => <hr className="border-slate-300 my-6" />,
 
-                // Line breaks
-                br: () => <br className="mb-2" />,
-
-                // Tables
+                // Style tables (from remark-gfm)
                 table: ({ children }) => (
                   <div className="overflow-x-auto mb-4">
                     <table className="min-w-full border border-slate-300 rounded-md">
@@ -397,6 +387,11 @@ export function ListCard({ list, onUpdate }: ListCardProps) {
                   <td className="px-4 py-2 text-slate-700 border-r border-slate-300 last:border-r-0">
                     {children}
                   </td>
+                ),
+
+                // Style strikethrough (from remark-gfm)
+                del: ({ children }) => (
+                  <del className="text-slate-500">{children}</del>
                 ),
               }}
             >
