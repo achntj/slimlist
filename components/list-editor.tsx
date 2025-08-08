@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Save, X } from "lucide-react";
+import { Save, X, CheckSquare } from "lucide-react";
 import { ListWithParsedTags } from "@/lib/types";
 import { updateListAction, createListAction } from "@/lib/actions";
 
@@ -22,6 +22,7 @@ export function ListEditor({ list, onCancel, onSave }: ListEditorProps) {
   const [dueDate, setDueDate] = useState(list?.due_date || "");
   const [tags, setTags] = useState(list?.tags.join(", ") || "");
   const [isSaving, setIsSaving] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleSave = async () => {
     if (!name.trim()) return;
@@ -48,6 +49,31 @@ export function ListEditor({ list, onCancel, onSave }: ListEditorProps) {
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const insertCheckbox = () => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const text = textarea.value;
+    const before = text.substring(0, start);
+    const after = text.substring(end);
+
+    // Check if we're at the start of a line or after a newline
+    const needsNewline = start > 0 && before[start - 1] !== "\n";
+    const checkboxText = needsNewline ? "\n- [ ] " : "- [ ] ";
+
+    const newText = before + checkboxText + after;
+    setContent(newText);
+
+    // Set cursor position
+    setTimeout(() => {
+      const newPosition = start + checkboxText.length;
+      textarea.setSelectionRange(newPosition, newPosition);
+      textarea.focus();
+    }, 0);
   };
 
   const placeholderText = `# Project Planning
@@ -126,13 +152,26 @@ const handleSubmit = () => {
         </div>
 
         <div>
-          <Label
-            htmlFor="content"
-            className="text-slate-700 dark:text-zinc-300"
-          >
-            Content (GitHub Flavored Markdown)
-          </Label>
+          <div className="flex items-center justify-between mb-1">
+            <Label
+              htmlFor="content"
+              className="text-slate-700 dark:text-zinc-300"
+            >
+              Content (GitHub Flavored Markdown)
+            </Label>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={insertCheckbox}
+              className="h-7 px-2 text-xs text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-100"
+            >
+              <CheckSquare className="w-3 h-3 mr-1" />
+              Add Checkbox
+            </Button>
+          </div>
           <Textarea
+            ref={textareaRef}
             id="content"
             value={content}
             onChange={(e) => setContent(e.target.value)}
