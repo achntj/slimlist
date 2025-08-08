@@ -174,16 +174,16 @@ export function ListCard({ list, onUpdate }: ListCardProps) {
   }
 
   return (
-    <Card className="group hover:shadow-md transition-shadow duration-200">
+    <Card className="group hover:shadow-md dark:hover:shadow-xl dark:hover:shadow-black/20 transition-shadow duration-200 bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <h3 className="text-lg font-semibold text-slate-900 mb-2">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-zinc-50 mb-2">
               {list.name}
             </h3>
             {list.due_date && (
               <div className="flex items-center space-x-2 text-sm">
-                <Calendar className="w-4 h-4 text-slate-500" />
+                <Calendar className="w-4 h-4 text-slate-500 dark:text-zinc-500" />
                 <span
                   className={`${
                     new Date(list.due_date + "T00:00:00") <
@@ -192,11 +192,11 @@ export function ListCard({ list, onUpdate }: ListCardProps) {
                       new Date().getMonth(),
                       new Date().getDate(),
                     )
-                      ? "text-red-600 font-medium"
+                      ? "text-red-600 dark:text-red-400 font-medium"
                       : new Date(list.due_date + "T00:00:00").toDateString() ===
                           new Date().toDateString()
-                        ? "text-orange-600 font-medium"
-                        : "text-slate-600"
+                        ? "text-orange-600 dark:text-orange-400 font-medium"
+                        : "text-slate-600 dark:text-zinc-400"
                   }`}
                 >
                   {formatDate(list.due_date)}
@@ -209,7 +209,7 @@ export function ListCard({ list, onUpdate }: ListCardProps) {
               variant="ghost"
               size="sm"
               onClick={() => setIsEditing(true)}
-              className="h-8 w-8 p-0"
+              className="h-8 w-8 p-0 text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-100 hover:bg-slate-50 dark:hover:bg-zinc-800"
             >
               <Edit className="w-4 h-4" />
             </Button>
@@ -218,7 +218,7 @@ export function ListCard({ list, onUpdate }: ListCardProps) {
               size="sm"
               onClick={handleDelete}
               disabled={isDeleting}
-              className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+              className="h-8 w-8 p-0 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-950/30"
             >
               <Trash2 className="w-4 h-4" />
             </Button>
@@ -227,7 +227,7 @@ export function ListCard({ list, onUpdate }: ListCardProps) {
       </CardHeader>
       <CardContent className="pt-0">
         {content && (
-          <div className="mb-4 prose prose-sm max-w-none prose-slate">
+          <div className="mb-4 max-w-none">
             <ReactMarkdown
               remarkPlugins={[remarkGfm, remarkBreaks]}
               components={{
@@ -238,9 +238,9 @@ export function ListCard({ list, onUpdate }: ListCardProps) {
                       <input
                         type="checkbox"
                         checked={checked}
-                        disabled={false} // Override the disabled state from remark-gfm
+                        disabled={false}
                         onChange={handleCheckboxChange}
-                        className="mr-2 rounded border-slate-300 cursor-pointer"
+                        className="mr-2 rounded border-slate-300 dark:border-zinc-700 cursor-pointer bg-white dark:bg-zinc-800 text-blue-600 dark:text-blue-400"
                         {...props}
                       />
                     );
@@ -255,46 +255,46 @@ export function ListCard({ list, onUpdate }: ListCardProps) {
                   );
                 },
 
-                // Style headings
+                // headings
                 h1: ({ children }) => (
-                  <h1 className="text-2xl font-bold text-slate-900 mb-4 mt-6 first:mt-0">
+                  <h1 className="text-2xl font-bold text-slate-900 dark:text-zinc-50 mb-4 mt-6 first:mt-0">
                     {children}
                   </h1>
                 ),
                 h2: ({ children }) => (
-                  <h2 className="text-xl font-bold text-slate-800 mb-3 mt-5 first:mt-0">
+                  <h2 className="text-xl font-bold text-slate-800 dark:text-zinc-100 mb-3 mt-5 first:mt-0">
                     {children}
                   </h2>
                 ),
                 h3: ({ children }) => (
-                  <h3 className="text-lg font-semibold text-slate-800 mb-2 mt-4 first:mt-0">
+                  <h3 className="text-lg font-semibold text-slate-800 dark:text-zinc-100 mb-2 mt-4 first:mt-0">
                     {children}
                   </h3>
                 ),
                 h4: ({ children }) => (
-                  <h4 className="text-base font-semibold text-slate-700 mb-2 mt-3 first:mt-0">
+                  <h4 className="text-base font-semibold text-slate-700 dark:text-zinc-200 mb-2 mt-3 first:mt-0">
                     {children}
                   </h4>
                 ),
                 h5: ({ children }) => (
-                  <h5 className="text-sm font-semibold text-slate-700 mb-1 mt-2 first:mt-0">
+                  <h5 className="text-sm font-semibold text-slate-700 dark:text-zinc-200 mb-1 mt-2 first:mt-0">
                     {children}
                   </h5>
                 ),
                 h6: ({ children }) => (
-                  <h6 className="text-sm font-medium text-slate-600 mb-1 mt-2 first:mt-0">
+                  <h6 className="text-sm font-medium text-slate-600 dark:text-zinc-300 mb-1 mt-2 first:mt-0">
                     {children}
                   </h6>
                 ),
 
-                // Style paragraphs
+                // paragraphs
                 p: ({ children }) => (
-                  <p className="text-slate-700 mb-3 leading-relaxed last:mb-0">
+                  <p className="text-slate-700 dark:text-zinc-300 mb-3 leading-relaxed last:mb-0">
                     {children}
                   </p>
                 ),
 
-                // Style lists
+                // lists
                 ul: ({ children }) => (
                   <ul className="list-disc list-inside space-y-1 mb-4 last:mb-0 pl-4">
                     {children}
@@ -306,53 +306,57 @@ export function ListCard({ list, onUpdate }: ListCardProps) {
                   </ol>
                 ),
                 li: ({ children }) => (
-                  <li className="text-slate-700 py-1">{children}</li>
+                  <li className="text-slate-700 dark:text-zinc-300">
+                    {children}
+                  </li>
                 ),
 
-                // Style text formatting
+                // bold and italocs
                 strong: ({ children }) => (
-                  <strong className="font-semibold text-slate-900">
+                  <strong className="font-semibold text-slate-900 dark:text-zinc-50">
                     {children}
                   </strong>
                 ),
                 em: ({ children }) => (
-                  <em className="italic text-slate-800">{children}</em>
+                  <em className="italic text-slate-800 dark:text-zinc-200">
+                    {children}
+                  </em>
                 ),
 
-                // Style code
+                // code blocks
                 code: ({ children, className }) => {
                   const isInline = !className;
                   if (isInline) {
                     return (
-                      <code className="bg-slate-100 text-slate-800 px-1.5 py-0.5 rounded text-sm font-mono">
+                      <code className="bg-slate-100 dark:bg-zinc-800 text-slate-800 dark:text-zinc-200 px-1.5 py-0.5 rounded text-sm font-mono border dark:border-zinc-700">
                         {children}
                       </code>
                     );
                   }
                   return (
-                    <code className="block bg-slate-100 text-slate-800 p-3 rounded-md text-sm font-mono overflow-x-auto mb-4">
+                    <code className="block bg-slate-100 dark:bg-zinc-900 text-slate-800 dark:text-zinc-200 p-3 rounded-md text-sm font-mono overflow-x-auto mb-4 border dark:border-zinc-800">
                       {children}
                     </code>
                   );
                 },
                 pre: ({ children }) => (
-                  <pre className="bg-slate-100 text-slate-800 p-3 rounded-md text-sm font-mono overflow-x-auto mb-4">
+                  <pre className="bg-slate-100 dark:bg-zinc-900 text-slate-800 dark:text-zinc-200 p-3 rounded-md text-sm font-mono overflow-x-auto mb-4 border dark:border-zinc-800">
                     {children}
                   </pre>
                 ),
 
-                // Style blockquotes
+                // blockquotes
                 blockquote: ({ children }) => (
-                  <blockquote className="border-l-4 border-slate-300 pl-4 py-2 mb-4 text-slate-600 italic bg-slate-50 rounded-r">
+                  <blockquote className="border-l-4 border-slate-300 dark:border-zinc-700 pl-4 py-2 mb-4 text-slate-600 dark:text-zinc-400 italic bg-slate-50 dark:bg-zinc-900/50 rounded-r">
                     {children}
                   </blockquote>
                 ),
 
-                // Style links
+                // links
                 a: ({ children, href }) => (
                   <a
                     href={href}
-                    className="text-blue-600 hover:text-blue-800 underline"
+                    className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
@@ -360,38 +364,46 @@ export function ListCard({ list, onUpdate }: ListCardProps) {
                   </a>
                 ),
 
-                // Style horizontal rules
-                hr: () => <hr className="border-slate-300 my-6" />,
+                // horizontal rules
+                hr: () => (
+                  <hr className="border-slate-300 dark:border-zinc-700 my-6" />
+                ),
 
-                // Style tables (from remark-gfm)
+                // tables
                 table: ({ children }) => (
                   <div className="overflow-x-auto mb-4">
-                    <table className="min-w-full border border-slate-300 rounded-md">
+                    <table className="min-w-full border border-slate-300 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-900">
                       {children}
                     </table>
                   </div>
                 ),
                 thead: ({ children }) => (
-                  <thead className="bg-slate-50">{children}</thead>
+                  <thead className="bg-slate-50 dark:bg-zinc-800">
+                    {children}
+                  </thead>
                 ),
                 tbody: ({ children }) => <tbody>{children}</tbody>,
                 tr: ({ children }) => (
-                  <tr className="border-b border-slate-200">{children}</tr>
+                  <tr className="border-b border-slate-200 dark:border-zinc-700">
+                    {children}
+                  </tr>
                 ),
                 th: ({ children }) => (
-                  <th className="px-4 py-2 text-left font-semibold text-slate-900 border-r border-slate-300 last:border-r-0">
+                  <th className="px-4 py-2 text-left font-semibold text-slate-900 dark:text-zinc-50 border-r border-slate-300 dark:border-zinc-700 last:border-r-0">
                     {children}
                   </th>
                 ),
                 td: ({ children }) => (
-                  <td className="px-4 py-2 text-slate-700 border-r border-slate-300 last:border-r-0">
+                  <td className="px-4 py-2 text-slate-700 dark:text-zinc-300 border-r border-slate-300 dark:border-zinc-700 last:border-r-0">
                     {children}
                   </td>
                 ),
 
-                // Style strikethrough (from remark-gfm)
+                // strikethrough
                 del: ({ children }) => (
-                  <del className="text-slate-500">{children}</del>
+                  <del className="text-slate-500 dark:text-zinc-500">
+                    {children}
+                  </del>
                 ),
               }}
             >
@@ -402,7 +414,11 @@ export function ListCard({ list, onUpdate }: ListCardProps) {
         {list.tags.length > 0 && (
           <div className="flex flex-wrap gap-1">
             {list.tags.map((tag) => (
-              <Badge key={tag} variant="secondary" className="text-xs">
+              <Badge
+                key={tag}
+                variant="secondary"
+                className="text-xs bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border-slate-200 dark:border-zinc-700"
+              >
                 {tag}
               </Badge>
             ))}

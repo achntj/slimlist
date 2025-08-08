@@ -55,7 +55,7 @@ export default function HomePage() {
     return (
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-center py-12">
-          <div className="text-slate-600">Loading...</div>
+          <div className="text-slate-600 dark:text-zinc-400">Loading...</div>
         </div>
       </div>
     );
@@ -65,8 +65,10 @@ export default function HomePage() {
     <div className="max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">All Lists</h1>
-          <p className="text-slate-600 mt-1">
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-zinc-50">
+            All Lists
+          </h1>
+          <p className="text-slate-600 dark:text-zinc-400 mt-1">
             {filteredLists.length} list{filteredLists.length !== 1 ? "s" : ""}
             {selectedTags.length > 0 &&
               ` filtered by ${selectedTags.length} tag${selectedTags.length !== 1 ? "s" : ""}`}
@@ -98,15 +100,15 @@ export default function HomePage() {
 
         {filteredLists.length === 0 && !isCreating ? (
           <div className="text-center py-12">
-            <div className="text-slate-400 mb-4">
+            <div className="text-slate-400 dark:text-zinc-600 mb-4">
               <Plus className="w-12 h-12 mx-auto mb-4 opacity-50" />
             </div>
-            <h3 className="text-lg font-medium text-slate-900 mb-2">
+            <h3 className="text-lg font-medium text-slate-900 dark:text-zinc-100 mb-2">
               {selectedTags.length > 0
                 ? "No lists match your filters"
                 : "No lists yet"}
             </h3>
-            <p className="text-slate-600 mb-4">
+            <p className="text-slate-600 dark:text-zinc-400 mb-4">
               {selectedTags.length > 0
                 ? "Try adjusting your tag filters or create a new list."
                 : "Create your first list to get started organizing your tasks."}

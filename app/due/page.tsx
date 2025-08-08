@@ -52,7 +52,7 @@ export default function DuePage() {
     return (
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-center py-12">
-          <div className="text-slate-600">Loading...</div>
+          <div className="text-slate-600 dark:text-zinc-400">Loading...</div>
         </div>
       </div>
     );
@@ -98,8 +98,10 @@ export default function DuePage() {
   return (
     <div className="max-w-4xl mx-auto">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900">Due Dates</h1>
-        <p className="text-slate-600 mt-1">
+        <h1 className="text-3xl font-bold text-slate-900 dark:text-zinc-50">
+          Due Dates
+        </h1>
+        <p className="text-slate-600 dark:text-zinc-400 mt-1">
           {filteredLists.length} list{filteredLists.length !== 1 ? "s" : ""}{" "}
           with due dates
           {selectedTags.length > 0 &&
@@ -116,15 +118,15 @@ export default function DuePage() {
 
       {filteredLists.length === 0 ? (
         <div className="text-center py-12">
-          <div className="text-slate-400 mb-4">
+          <div className="text-slate-400 dark:text-zinc-600 mb-4">
             <Calendar className="w-12 h-12 mx-auto mb-4 opacity-50" />
           </div>
-          <h3 className="text-lg font-medium text-slate-900 mb-2">
+          <h3 className="text-lg font-medium text-slate-900 dark:text-zinc-100 mb-2">
             {selectedTags.length > 0
               ? "No lists with due dates match your filters"
               : "No lists with due dates"}
           </h3>
-          <p className="text-slate-600">
+          <p className="text-slate-600 dark:text-zinc-400">
             {selectedTags.length > 0
               ? "Try adjusting your tag filters."
               : "Add due dates to your lists to see them here."}
@@ -134,7 +136,7 @@ export default function DuePage() {
         <div className="space-y-8">
           {overdueLists.length > 0 && (
             <div>
-              <h2 className="text-xl font-semibold text-red-600 mb-4 flex items-center">
+              <h2 className="text-xl font-semibold text-red-600 dark:text-red-400 mb-4 flex items-center">
                 <Calendar className="w-5 h-5 mr-2" />
                 Overdue ({overdueLists.length})
               </h2>
@@ -152,7 +154,7 @@ export default function DuePage() {
 
           {todayLists.length > 0 && (
             <div>
-              <h2 className="text-xl font-semibold text-orange-600 mb-4 flex items-center">
+              <h2 className="text-xl font-semibold text-orange-600 dark:text-orange-400 mb-4 flex items-center">
                 <Calendar className="w-5 h-5 mr-2" />
                 Due Today ({todayLists.length})
               </h2>
@@ -170,7 +172,7 @@ export default function DuePage() {
 
           {upcomingLists.length > 0 && (
             <div>
-              <h2 className="text-xl font-semibold text-slate-700 mb-4 flex items-center">
+              <h2 className="text-xl font-semibold text-slate-700 dark:text-zinc-300 mb-4 flex items-center">
                 <Calendar className="w-5 h-5 mr-2" />
                 Upcoming ({upcomingLists.length})
               </h2>

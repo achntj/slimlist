@@ -83,10 +83,10 @@ const handleSubmit = () => {
 ~~Cancelled feature~~ - removed from scope`;
 
   return (
-    <Card>
+    <Card className="bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold">
+          <h3 className="text-lg font-semibold text-slate-900 dark:text-zinc-50">
             {list ? "Edit List" : "Create New List"}
           </h3>
           <div className="flex space-x-2">
@@ -94,7 +94,7 @@ const handleSubmit = () => {
               variant="ghost"
               size="sm"
               onClick={onCancel}
-              className="h-8 w-8 p-0"
+              className="h-8 w-8 p-0 text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-100 hover:bg-slate-50 dark:hover:bg-zinc-800"
             >
               <X className="w-4 h-4" />
             </Button>
@@ -113,50 +113,64 @@ const handleSubmit = () => {
       </CardHeader>
       <CardContent className="space-y-4">
         <div>
-          <Label htmlFor="name">List Name</Label>
+          <Label htmlFor="name" className="text-slate-700 dark:text-zinc-300">
+            List Name
+          </Label>
           <Input
             id="name"
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Enter list name..."
-            className="mt-1"
+            className="mt-1 bg-white dark:bg-zinc-800 border-slate-300 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 placeholder:text-slate-500 dark:placeholder:text-zinc-500"
           />
         </div>
 
         <div>
-          <Label htmlFor="content">Content (GitHub Flavored Markdown)</Label>
+          <Label
+            htmlFor="content"
+            className="text-slate-700 dark:text-zinc-300"
+          >
+            Content (GitHub Flavored Markdown)
+          </Label>
           <Textarea
             id="content"
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder={placeholderText}
-            className="mt-1 min-h-[200px] font-mono text-sm"
+            className="mt-1 min-h-[200px] font-mono text-sm bg-white dark:bg-zinc-800 border-slate-300 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 placeholder:text-slate-500 dark:placeholder:text-zinc-500"
           />
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-slate-500 dark:text-zinc-500 mt-1">
             Supports checkboxes, tables, ~~strikethrough~~, **bold**, *italic*,
             `code`, and more!
           </p>
         </div>
 
         <div>
-          <Label htmlFor="dueDate">Due Date (optional)</Label>
+          <Label
+            htmlFor="dueDate"
+            className="text-slate-700 dark:text-zinc-300"
+          >
+            Due Date (optional)
+          </Label>
           <Input
             id="dueDate"
             type="date"
             value={dueDate}
             onChange={(e) => setDueDate(e.target.value)}
-            className="mt-1"
+            className="mt-1 bg-white dark:bg-zinc-800 border-slate-300 dark:border-zinc-700 text-slate-900 dark:text-zinc-100"
           />
         </div>
 
         <div>
-          <Label htmlFor="tags">Tags (comma-separated)</Label>
+          <Label htmlFor="tags" className="text-slate-700 dark:text-zinc-300">
+            Tags (comma-separated)
+          </Label>
           <Input
             id="tags"
             value={tags}
             onChange={(e) => setTags(e.target.value)}
             placeholder="work, personal, urgent"
-            className="mt-1"
+            className="mt-1 bg-white dark:bg-zinc-800 border-slate-300 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 placeholder:text-slate-500 dark:placeholder:text-zinc-500"
           />
         </div>
       </CardContent>
