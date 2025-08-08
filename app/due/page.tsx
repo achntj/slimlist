@@ -1,51 +1,52 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { ListCard } from '@/components/list-card'
-import { FilterBar } from '@/components/filter-bar'
-import { ListWithParsedTags } from '@/lib/types'
-import { Calendar } from 'lucide-react'
+import { useState, useEffect } from "react";
+import { ListCard } from "@/components/list-card";
+import { FilterBar } from "@/components/filter-bar";
+import { ListWithParsedTags } from "@/lib/types";
+import { Calendar } from "lucide-react";
 
 export default function DuePage() {
-  const [lists, setLists] = useState<ListWithParsedTags[]>([])
-  const [availableTags, setAvailableTags] = useState<string[]>([])
-  const [selectedTags, setSelectedTags] = useState<string[]>([])
-  const [loading, setLoading] = useState(true)
+  const [lists, setLists] = useState<ListWithParsedTags[]>([]);
+  const [availableTags, setAvailableTags] = useState<string[]>([]);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const fetchData = async () => {
     try {
       const [listsResponse, tagsResponse] = await Promise.all([
-        fetch('/api/lists/due'),
-        fetch('/api/tags')
-      ])
-      
-      const listsData = await listsResponse.json()
-      const tagsData = await tagsResponse.json()
-      
-      setLists(listsData)
-      setAvailableTags(tagsData)
+        fetch("/api/lists/due"),
+        fetch("/api/tags"),
+      ]);
+
+      const listsData = await listsResponse.json();
+      const tagsData = await tagsResponse.json();
+
+      setLists(listsData);
+      setAvailableTags(tagsData);
     } catch (error) {
-      console.error('Failed to fetch data:', error)
+      console.error("Failed to fetch data:", error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    fetchData()
-  }, [])
+    fetchData();
+  }, []);
 
   const handleTagToggle = (tag: string) => {
-    setSelectedTags(prev => 
-      prev.includes(tag) 
-        ? prev.filter(t => t !== tag)
-        : [...prev, tag]
-    )
-  }
+    setSelectedTags((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag],
+    );
+  };
 
-  const filteredLists = selectedTags.length > 0 
-    ? lists.filter(list => selectedTags.some(tag => list.tags.includes(tag)))
-    : lists
+  const filteredLists =
+    selectedTags.length > 0
+      ? lists.filter((list) =>
+          selectedTags.some((tag) => list.tags.includes(tag)),
+        )
+      : lists;
 
   if (loading) {
     return (
@@ -54,25 +55,54 @@ export default function DuePage() {
           <div className="text-slate-600">Loading...</div>
         </div>
       </div>
-    )
+    );
   }
 
-  const now = new Date()
-  const overdueLists = filteredLists.filter(list => list.due_date && new Date(list.due_date) < now)
-  const todayLists = filteredLists.filter(list => 
-    list.due_date && new Date(list.due_date).toDateString() === now.toDateString()
-  )
-  const upcomingLists = filteredLists.filter(list => 
-    list.due_date && new Date(list.due_date) > now && new Date(list.due_date).toDateString() !== now.toDateString()
-  )
+  const now = new Date();
+  const nowStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+  const overdueLists = filteredLists.filter((list) => {
+    if (!list.due_date) return false;
+    const dueDate = new Date(list.due_date + "T00:00:00");
+    const dueDateStart = new Date(
+      dueDate.getFullYear(),
+      dueDate.getMonth(),
+      dueDate.getDate(),
+    );
+    return dueDateStart < nowStart;
+  });
+
+  const todayLists = filteredLists.filter((list) => {
+    if (!list.due_date) return false;
+    const dueDate = new Date(list.due_date + "T00:00:00");
+    const dueDateStart = new Date(
+      dueDate.getFullYear(),
+      dueDate.getMonth(),
+      dueDate.getDate(),
+    );
+    return dueDateStart.getTime() === nowStart.getTime();
+  });
+
+  const upcomingLists = filteredLists.filter((list) => {
+    if (!list.due_date) return false;
+    const dueDate = new Date(list.due_date + "T00:00:00");
+    const dueDateStart = new Date(
+      dueDate.getFullYear(),
+      dueDate.getMonth(),
+      dueDate.getDate(),
+    );
+    return dueDateStart > nowStart;
+  });
 
   return (
     <div className="max-w-4xl mx-auto">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-slate-900">Due Dates</h1>
         <p className="text-slate-600 mt-1">
-          {filteredLists.length} list{filteredLists.length !== 1 ? 's' : ''} with due dates
-          {selectedTags.length > 0 && ` filtered by ${selectedTags.length} tag${selectedTags.length !== 1 ? 's' : ''}`}
+          {filteredLists.length} list{filteredLists.length !== 1 ? "s" : ""}{" "}
+          with due dates
+          {selectedTags.length > 0 &&
+            ` filtered by ${selectedTags.length} tag${selectedTags.length !== 1 ? "s" : ""}`}
         </p>
       </div>
 
@@ -89,13 +119,14 @@ export default function DuePage() {
             <Calendar className="w-12 h-12 mx-auto mb-4 opacity-50" />
           </div>
           <h3 className="text-lg font-medium text-slate-900 mb-2">
-            {selectedTags.length > 0 ? 'No lists with due dates match your filters' : 'No lists with due dates'}
+            {selectedTags.length > 0
+              ? "No lists with due dates match your filters"
+              : "No lists with due dates"}
           </h3>
           <p className="text-slate-600">
-            {selectedTags.length > 0 
-              ? 'Try adjusting your tag filters.'
-              : 'Add due dates to your lists to see them here.'
-            }
+            {selectedTags.length > 0
+              ? "Try adjusting your tag filters."
+              : "Add due dates to your lists to see them here."}
           </p>
         </div>
       ) : (
@@ -144,5 +175,5 @@ export default function DuePage() {
         </div>
       )}
     </div>
-  )
+  );
 }
