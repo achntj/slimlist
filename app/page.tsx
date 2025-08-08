@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { ListCard } from "@/components/list-card";
@@ -15,11 +15,11 @@ export default function HomePage() {
   const [isCreating, setIsCreating] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       const [listsResponse, tagsResponse] = await Promise.all([
-        fetch("/api/lists"),
-        fetch("/api/tags"),
+        fetch("/api/lists", { cache: "no-store" }),
+        fetch("/api/tags", { cache: "no-store" }),
       ]);
 
       const listsData = await listsResponse.json();
@@ -32,11 +32,11 @@ export default function HomePage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [fetchData]);
 
   const handleTagToggle = (tag: string) => {
     setSelectedTags((prev) =>
@@ -120,7 +120,11 @@ export default function HomePage() {
           </div>
         ) : (
           filteredLists.map((list) => (
-            <ListCard key={list.id} list={list} onUpdate={fetchData} />
+            <ListCard
+              key={`${list.id}-${list.updated_at}`}
+              list={list}
+              onUpdate={fetchData}
+            />
           ))
         )}
       </div>

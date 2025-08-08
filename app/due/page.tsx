@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { ListCard } from "@/components/list-card";
 import { FilterBar } from "@/components/filter-bar";
 import { ListWithParsedTags } from "@/lib/types";
@@ -12,11 +12,11 @@ export default function DuePage() {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       const [listsResponse, tagsResponse] = await Promise.all([
-        fetch("/api/lists/due"),
-        fetch("/api/tags"),
+        fetch("/api/lists/due", { cache: "no-store" }),
+        fetch("/api/tags", { cache: "no-store" }),
       ]);
 
       const listsData = await listsResponse.json();
@@ -29,11 +29,11 @@ export default function DuePage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [fetchData]);
 
   const handleTagToggle = (tag: string) => {
     setSelectedTags((prev) =>
@@ -58,6 +58,7 @@ export default function DuePage() {
     );
   }
 
+  // Use the same local time logic as ListCard
   const now = new Date();
   const nowStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
@@ -139,7 +140,11 @@ export default function DuePage() {
               </h2>
               <div className="space-y-4">
                 {overdueLists.map((list) => (
-                  <ListCard key={list.id} list={list} onUpdate={fetchData} />
+                  <ListCard
+                    key={`${list.id}-${list.updated_at}`}
+                    list={list}
+                    onUpdate={fetchData}
+                  />
                 ))}
               </div>
             </div>
@@ -153,7 +158,11 @@ export default function DuePage() {
               </h2>
               <div className="space-y-4">
                 {todayLists.map((list) => (
-                  <ListCard key={list.id} list={list} onUpdate={fetchData} />
+                  <ListCard
+                    key={`${list.id}-${list.updated_at}`}
+                    list={list}
+                    onUpdate={fetchData}
+                  />
                 ))}
               </div>
             </div>
@@ -167,7 +176,11 @@ export default function DuePage() {
               </h2>
               <div className="space-y-4">
                 {upcomingLists.map((list) => (
-                  <ListCard key={list.id} list={list} onUpdate={fetchData} />
+                  <ListCard
+                    key={`${list.id}-${list.updated_at}`}
+                    list={list}
+                    onUpdate={fetchData}
+                  />
                 ))}
               </div>
             </div>
