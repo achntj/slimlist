@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Edit, Trash2, Calendar } from "lucide-react";
 import { ListWithParsedTags } from "@/lib/types";
-import { deleteListAction } from "@/lib/actions";
+import { deleteListAction, updateListAction } from "@/lib/actions";
 import { ListEditor } from "./list-editor";
 import ReactMarkdown from "react-markdown";
 
@@ -18,6 +18,7 @@ interface ListCardProps {
 export function ListCard({ list, onUpdate }: ListCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [content, setContent] = useState(list.content);
 
   const handleDelete = async () => {
     if (!confirm("Are you sure you want to delete this list?")) return;
@@ -33,11 +34,53 @@ export function ListCard({ list, onUpdate }: ListCardProps) {
     }
   };
 
+  const handleCheckboxChange = async (
+    lineIndex: number,
+    isChecked: boolean,
+  ) => {
+    const lines = content.split("\n");
+    const line = lines[lineIndex];
+
+    if (line.includes("[ ]") || line.includes("[x]")) {
+      const newLine = isChecked
+        ? line.replace("[ ]", "[x]")
+        : line.replace("[x]", "[ ]");
+
+      lines[lineIndex] = newLine;
+      const newContent = lines.join("\n");
+      setContent(newContent);
+
+      try {
+        const formData = new FormData();
+        formData.append("id", list.id.toString());
+        formData.append("name", list.name);
+        formData.append("content", newContent);
+        formData.append("dueDate", list.due_date || "");
+        formData.append("tags", list.tags.join(", "));
+
+        await updateListAction(formData);
+        onUpdate();
+      } catch (error) {
+        console.error("Failed to update checkbox:", error);
+        setContent(list.content);
+      }
+    }
+  };
+
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
+    // Create date objects using local time
+    const dueDate = new Date(dateString + "T00:00:00");
     const now = new Date();
-    const diffTime = date.getTime() - now.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    const dueDateStart = new Date(
+      dueDate.getFullYear(),
+      dueDate.getMonth(),
+      dueDate.getDate(),
+    );
+    const nowStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    const diffTime = dueDateStart.getTime() - nowStart.getTime();
+    const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
 
     if (diffDays < 0) {
       return `Overdue by ${Math.abs(diffDays)} day${Math.abs(diffDays) !== 1 ? "s" : ""}`;
@@ -76,9 +119,14 @@ export function ListCard({ list, onUpdate }: ListCardProps) {
                 <Calendar className="w-4 h-4 text-slate-500" />
                 <span
                   className={`${
-                    new Date(list.due_date) < new Date()
+                    new Date(list.due_date + "T00:00:00") <
+                    new Date(
+                      new Date().getFullYear(),
+                      new Date().getMonth(),
+                      new Date().getDate(),
+                    )
                       ? "text-red-600 font-medium"
-                      : new Date(list.due_date).toDateString() ===
+                      : new Date(list.due_date + "T00:00:00").toDateString() ===
                           new Date().toDateString()
                         ? "text-orange-600 font-medium"
                         : "text-slate-600"
@@ -111,25 +159,39 @@ export function ListCard({ list, onUpdate }: ListCardProps) {
         </div>
       </CardHeader>
       <CardContent className="pt-0">
-        {list.content && (
+        {content && (
           <div className="prose prose-sm max-w-none mb-4">
             <ReactMarkdown
               components={{
                 ul: ({ children }) => (
                   <ul className="list-none space-y-1 pl-0">{children}</ul>
                 ),
-                li: ({ children }) => {
-                  const content = children?.toString() || "";
-                  if (content.includes("[ ]") || content.includes("[x]")) {
-                    const isChecked = content.includes("[x]");
-                    const text = content.replace(/^\s*-\s*\[([ x])\]\s*/, "");
+                li: ({ children, ...props }) => {
+                  const childrenString = children?.toString() || "";
+                  if (
+                    childrenString.includes("[ ]") ||
+                    childrenString.includes("[x]")
+                  ) {
+                    const isChecked = childrenString.includes("[x]");
+                    const text = childrenString.replace(
+                      /^\s*-\s*\[([ x])\]\s*/,
+                      "",
+                    );
+
+                    const lines = content.split("\n");
+                    const lineIndex = lines.findIndex((line) =>
+                      line.includes(childrenString.replace(/^\s*/, "")),
+                    );
+
                     return (
                       <li className="flex items-start space-x-2">
                         <input
                           type="checkbox"
                           checked={isChecked}
-                          readOnly
-                          className="mt-1 rounded border-slate-300"
+                          onChange={(e) =>
+                            handleCheckboxChange(lineIndex, e.target.checked)
+                          }
+                          className="mt-1 rounded border-slate-300 cursor-pointer"
                         />
                         <span
                           className={
@@ -145,7 +207,7 @@ export function ListCard({ list, onUpdate }: ListCardProps) {
                 },
               }}
             >
-              {list.content}
+              {content}
             </ReactMarkdown>
           </div>
         )}
