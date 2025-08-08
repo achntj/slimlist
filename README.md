@@ -1,7 +1,7 @@
 # Your Local Second Brain
 
-MindList is a fast, minimal list and task manager built for clarity, focus, and
-full control. It's a glorified Todo List.
+SlimList is a fast, minimal list and task manager built for clarity, focus, and
+full control (it's a glorified Todo List).
 
 Most productivity tools are bloated. MindList is lightweight, local, and
 distraction-free. It gives you a private, organized space for everything from
