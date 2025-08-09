@@ -3,7 +3,7 @@
 SlimList is a fast, minimal list and task manager built for clarity, focus, and
 full control (it's a glorified Todo List).
 
-Most productivity tools are bloated. MindList is lightweight, local, and
+Most productivity tools are bloated. SlimList is lightweight, local, and
 distraction-free. It gives you a private, organized space for everything from
 daily tasks to long-term planning.
 
